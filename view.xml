@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<openerp>
+  <data>
+
+    <menuitem id="menu_listes_tutoriel" sequence="1" name="Listes Factures Tutoriel" parent="account.menu_finance"/>
+
+    <menuitem id="menu_tutoriel_liste_standard" sequence="10" name="Liste standard" parent="menu_listes_tutoriel" action="account.action_invoice_tree1" />
+
+    <!-- Vue Liste 1 -->
+    <record id="vue_tutoriel_liste_factures1" model="ir.ui.view">
+        <field name="name">Liste factures 1</field>
+        <field name="model">account.invoice</field>
+        <field name="priority" eval="99"/> <!-- Priorité élevée pour ne pas remplacer la vue par défaut -->
+        <field name="arch" type="xml">
+            <tree string="Factures">
+                <field name="partner_id" />
+                <field name="date_invoice"/>
+                <field name="number"/>
+                <field name="date_due"/>
+                <field name="amount_total" sum="Total Amount"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action pour utiliser la vue précédente -->
+    <record model="ir.actions.act_window" id="action_tutoriel_liste_factures1">
+        <field name="name">Action Liste factures 1</field>
+        <field name="res_model">account.invoice</field>
+        <!-- Cette liste ne proposera que les vues tree et form -->
+        <field name="view_mode">tree,form</field>
+        <!-- Cette ligne permet de préciser la vue a utiliser à la place de la vue par défaut -->
+        <field name="view_id" ref="vue_tutoriel_liste_factures1"/>
+    </record>
+
+    <!-- Menu pour utiliser l'action précédente -->
+    <menuitem id="menu_tutoriel_liste1" sequence="20" name="Liste simple" parent="menu_listes_tutoriel" action="action_tutoriel_liste_factures1" />
+
+
+
+
+
+
+    <!-- Vue Liste 2 -->
+    <record id="vue_tutoriel_liste_factures2" model="ir.ui.view">
+        <field name="name">Liste factures 1</field>
+        <field name="model">account.invoice</field>
+        <field name="priority" eval="99"/> <!-- Priorité élevée pour ne pas remplacer la vue par défaut -->
+        <field name="arch" type="xml">
+            <!-- 4 couleurs possibles dans la liste : 
+                 - orange: Montant  > 100 " >
+                 - bleu  : factures à l'état 'draft'
+                 - noir  : factures à l'état proforma, proforma2 ou open
+                 - rouge : factures à l'état 'cancel'
+                 Remarque : Si une facture répond à plusieurs conditions, la première trouvée aura la priorité
+            -->
+            <tree colors="orange:amount_total > 100;
+                          blue:state == 'draft';
+                          black:state in ('proforma','proforma2','open');
+                          red:state == 'cancel'" string="Factures">
+                <field name="partner_id" />
+                <field name="date_invoice"/>
+                <field name="number"/>
+                <field name="date_due"/>
+                <field name="amount_total" sum="Total Amount"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action pour utiliser la vue précédente -->
+    <record model="ir.actions.act_window" id="action_tutoriel_liste_factures2">
+        <field name="name">Action Liste factures 2</field>
+        <field name="res_model">account.invoice</field>
+        <!-- Cette liste ne proposera que les vues tree et form -->
+        <field name="view_mode">tree,form</field>
+        <!-- Cette ligne permet de préciser la vue a utiliser à la place de la vue par défaut -->
+        <field name="view_id" ref="vue_tutoriel_liste_factures2"/>
+    </record>
+
+    <!-- Menu pour utiliser l'action précédente -->
+    <menuitem id="menu_tutoriel_liste2" sequence="30" name="Liste avec couleurs" parent="menu_listes_tutoriel" action="action_tutoriel_liste_factures2" />
+
+
+
+
+    <!-- Nouvelle vue de recherhce -->
+    <record id="tutoriel_view_account_invoice_filter" model="ir.ui.view">
+        <field name="name">tutoriel.account.invoice.select</field>
+        <field name="model">account.invoice</field>
+        <field name="priority" eval="99"/> <!-- Priorité élevée pour ne pas remplacer la vue par défaut -->
+        <field name="arch" type="xml">
+            <search string="Search Invoice">
+
+                <!-- Permet de faire une recherche sur plusieurs champs en même temps -->
+                <field name="number" string="Facture" filter_domain="['|','|','|', ('number','ilike',self), ('origin','ilike',self), ('supplier_invoice_number', 'ilike', self), ('partner_id', 'child_of', self)]"/>
+
+                <!-- Permet de filtrer sur les montants supérieur au nombre saisie -->
+                <field name="amount_total" string="Montant >" filter_domain="[('amount_total','>',self)]"/>
+
+                <!-- Ajoute un filtre pour afficher uniquement les factures à l'état 'draft' -->
+                <filter name="mon_filtre1"    string="Draft"    domain="[('state','=','draft')]"                 help="Draft Invoices"/>
+
+                <!-- Ajoute un filtre pour afficher les factures qui ne sont pas à l'état 'draft' ou 'cancel' -->
+                <filter name="mon_filtre2" string="Les factures" domain="[('state','not in',['draft','cancel'])]" help="Factures qui ne sont pas à l'état 'draft' ou 'cancel'"/>
+
+                <!-- Ajoute le  filtre 'Mes factures' -->
+                <filter name="mon_filtre3" domain="[('user_id','=',uid)]" help="Mes factures" />
+
+           </search>
+        </field>
+    </record>
+
+    <!-- Action pour utiliser la vue précédente -->
+    <record model="ir.actions.act_window" id="action_tutoriel_liste_factures3">
+        <field name="name">Action Liste factures 3</field>
+        <field name="res_model">account.invoice</field>
+        <!-- Cette liste ne proposera que les vues tree et form -->
+        <field name="view_mode">tree,form</field>
+        <!-- Cette ligne permet de préciser la vue a utiliser à la place de la vue par défaut -->
+        <field name="view_id" ref="vue_tutoriel_liste_factures2"/>
+        <!-- Cette ligne permet de préciser la vue de recherche a utiliser à la place de la vue par défaut -->
+        <field name="search_view_id" ref="tutoriel_view_account_invoice_filter"/>
+    </record>
+
+    <!-- Menu pour utiliser l'action précédente -->
+    <menuitem id="menu_tutoriel_liste3" sequence="40" name="Recherche personnalisée" parent="menu_listes_tutoriel" action="action_tutoriel_liste_factures3" />
+
+
+
+
+
+
+
+
+    <!-- Action pour définir plusieurs vues par défaut 
+         - Le champ name="view_id", ne permet de définir qu'une seule vue par défaut
+         - Pour définir, plusieurs vues, il est necessaire d'utiliser des sous-bloc action comme ci-dessous
+         - Le premier sous-bloc permet de définir la vue tree
+         - Le deuxième sous-bloc permet de définir la vue form -->
+    <record model="ir.actions.act_window" id="action_tutoriel_liste_factures5">
+            <field name="name">Action Liste factures 5</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar,graph</field>
+            <field eval="False" name="view_id"/>
+            <!-- Permet de préciser la vue de recherche à utiliser par défaut -->
+            <field name="search_view_id" ref="account.view_account_invoice_filter"/>
+    </record>
+    <!-- Ce bloc permet de preciser la vue tree a utiliser dans l'action précédente -->
+    <record id="action_tutoriel_liste_factures5_tree" model="ir.actions.act_window.view">
+        <field eval="1" name="sequence"/>
+        <field name="view_mode">tree</field>
+        <!-- Cette ligne permet de préciser l'id de la vue à utiliser à la place de la vue par défaut -->
+        <field name="view_id" ref="vue_tutoriel_liste_factures2"/>
+        <!-- Cette ligne permet de préciser l'id de l'action de reférence sur laquelle il faut modifier la vue par défaut -->
+        <field name="act_window_id" ref="action_tutoriel_liste_factures5"/>
+    </record>
+    <!-- Ce bloc permet de preciser la vue form a utiliser dans l'action précédente -->
+    <record id="action_tutoriel_liste_factures5_form" model="ir.actions.act_window.view">
+        <field eval="2" name="sequence"/>
+        <field name="view_mode">form</field>
+        <!-- Cette ligne permet de préciser l'id de la vue à utiliser à la place de la vue par défaut -->
+        <field name="view_id" ref="account.invoice_form"/>
+        <!-- Cette ligne permet de préciser l'id de l'action de reférence sur laquelle il faut modifier la vue par défaut -->
+        <field name="act_window_id" ref="action_tutoriel_liste_factures5"/>
+    </record>
+
+    <!-- Menu pour utiliser l'action précédente -->
+    <menuitem id="menu_tutoriel_liste5" sequence="40" name="Plusieurs vues par défaut" parent="menu_listes_tutoriel" action="action_tutoriel_liste_factures5" />
+
+
+
+
+
+    <!-- Action avec contexte par défaut -->
+    <record model="ir.actions.act_window" id="action_tutoriel_liste_factures6">
+        <field name="name">Action Liste factures 6</field>
+        <field name="res_model">account.invoice</field>
+        <!-- Cette liste ne proposera que les vues tree et form -->
+        <field name="view_mode">tree,form</field>
+        <!-- Cette ligne permet de préciser la vue de recherche a utiliser à la place de la vue par défaut -->
+        <field name="search_view_id" ref="tutoriel_view_account_invoice_filter"/>
+        <!-- Cette ligne permet de définir le contexte pour pré-remplir les champs lors de la création de la facture -->
+        <!-- Pour cela, il faut mettre 'defaut_' devant le nom du champ à pré-remplir -->
+        <field name="context">{'default_reference':'Ma référence',
+                               'default_date_invoice':'2013-12-31',
+                               'default_fiscal_position':1,
+                               'default_partner_id': 6}
+        </field>
+    </record>
+
+    <!-- Menu pour utiliser l'action précédente -->
+    <menuitem id="menu_tutoriel_liste6" sequence="40" name="Contexte par défaut" parent="menu_listes_tutoriel" action="action_tutoriel_liste_factures6" />
+
+
+
+
+    <!-- Action avec domaine par défaut -->
+    <record model="ir.actions.act_window" id="action_tutoriel_liste_factures7">
+        <field name="name">Action Liste factures 7</field>
+        <field name="res_model">account.invoice</field>
+        <!-- Cette liste ne proposera que les vues tree et form -->
+        <field name="view_mode">tree,form</field>
+        <!-- Cette ligne permet de préciser la vue de recherche a utiliser à la place de la vue par défaut -->
+        <field name="search_view_id" ref="tutoriel_view_account_invoice_filter"/>
+        <!-- Cette ligne permet de définir le contexte pour pré-remplir les champs lors de la création de la facture -->
+
+        <!-- Cette ligne permet d'ajouter le filtre 'mon_filtre1' créé dans la vue de recherche 'tutoriel_view_account_invoice_filter' -->
+        <field name="context">{'search_default_mon_filtre1':1}</field>
+
+        <!-- Affiche les factures dont la date est supérieure ou égale au 01/12/2013 -->
+        <field name="domain">[('date_invoice','>=','2013-12-01')]</field>  
+
+        <!-- Autres exemples -->
+
+        <!-- Affiche uniquement les factures fournisseur -->
+        <!--<field name="domain">[('type','=','in_invoice')]</field>    -->
+
+        <!-- Affiche uniquement les factures client -->
+        <!--<field name="domain">[('type','=','out_invoice')]</field>     -->
+
+        <!-- Efface le domaine précédent de cette action -->
+        <!-- <field name="domain"></field> -->
+    </record>
+
+    <!-- Menu pour utiliser l'action précédente -->
+    <menuitem id="menu_tutoriel_liste7" sequence="40" name="Domaine par défaut" parent="menu_listes_tutoriel" action="action_tutoriel_liste_factures7" />
+
+
+  </data>
+</openerp>
+
